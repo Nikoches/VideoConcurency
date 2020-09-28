@@ -5,28 +5,27 @@ import javax.imageio.IIOException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
+
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.stream.Collectors;
 
 
 // Класс Магазин, хранящий произведенные товары
-public class Store{
+public class Store {
     ArrayList<Model> models = Loader.getModels();
     int modelsq = 0;
+
     public synchronized void get() {
         while (modelsq == models.size()) {
             try {
                 wait();
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.getMessage();
             }
         }
-        for (Model x:models) {
+        for (Model x : models) {
             try {
                 String text2 = new BufferedReader(
                         new InputStreamReader(new URL(x.getTokenDataUrl()).openConnection().getInputStream(), StandardCharsets.UTF_8))
@@ -35,12 +34,10 @@ public class Store{
                 JsonObject convertedObject = new Gson().fromJson(text2, JsonObject.class);
                 x.setValue(convertedObject.get("value").getAsString());
                 x.setTtl(convertedObject.get("ttl").getAsInt());
-        }catch (IOException ex){
-            ex.getStackTrace();
+            } catch (IOException ex) {
+                ex.getStackTrace();
             }
         }
-        System.out.println(models);
-        System.out.println(new Date());
     }
 
     public synchronized void put() {
@@ -49,12 +46,14 @@ public class Store{
 }
 
 // Класс Потребитель
-class Consumer implements Runnable{
+class Consumer implements Runnable {
     Store store;
-    Consumer(Store store){
-        this.store=store;
+
+    Consumer(Store store) {
+        this.store = store;
     }
+
     public void run() {
-       store.get();
+        store.get();
     }
 }

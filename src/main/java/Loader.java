@@ -18,7 +18,9 @@ public class Loader {
 
     public static void main(String[] args) {
         store = new Store();
+        Thread sec = new Thread( new Consumer(store));
         new Loader().connect();
+        sec.start();
     }
 
     public static ArrayList<Model> getModels() {
