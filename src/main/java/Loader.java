@@ -16,11 +16,12 @@ public class Loader {
     private static final ArrayList<Model> models = new ArrayList<>();
     private static Store store;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         store = new Store();
         Thread sec = new Thread( new Consumer(store));
         new Loader().connect();
         sec.start();
+        sec.join();
     }
 
     public static ArrayList<Model> getModels() {
