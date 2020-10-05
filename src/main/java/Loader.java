@@ -1,27 +1,23 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.stream.Collectors;
+import java.util.concurrent.ForkJoinPool;
+
 
 public class Loader {
 
     private static final ArrayList<Model> models = new ArrayList<>();
-    private static Store store;
+    public static ForkJoinPool commonPool = ForkJoinPool.commonPool();
 
-    public static void main(String[] args) throws InterruptedException {
-        store = new Store();
-        Thread sec = new Thread( new Consumer(store));
-        new Loader().connect();
-        sec.start();
-        sec.join();
+    public static void main(String[] args) {
+        Loader loader = new Loader();
+        loader.connect();
+        commonPool.invoke(new CustomRecursiveTask(models));
     }
 
     public static ArrayList<Model> getModels() {
@@ -40,16 +36,6 @@ public class Loader {
                 ss.append(inputLine).append("\n");
             }
             Collections.addAll(models, gson.fromJson(ss.toString(), Model[].class));
-            store.put();
-            for (Model x : models) {
-                String text1 = new BufferedReader(
-                        new InputStreamReader(new URL(x.getSourceDataUrl()).openConnection().getInputStream(), StandardCharsets.UTF_8))
-                        .lines()
-                        .collect(Collectors.joining("\n"));
-                JsonObject convertedObject = new Gson().fromJson(text1, JsonObject.class);
-                x.setType(convertedObject.get("urlType").getAsString());
-                x.setVideoUrl(convertedObject.get("videoUrl").getAsString());
-            }
             in.close();
 
         } catch (IOException ex) {
